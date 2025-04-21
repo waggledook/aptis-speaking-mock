@@ -16,15 +16,7 @@ export default function Part3Discussion() {
   const [phase,   setPhase]   = useState('locked');
   const [seconds, setSeconds] = useState(0);
 
-  // unlock & kick off the first instructions
-  const startPart3 = () => {
-    resumeAudio();       // unlock AudioContext
-    setPhase('instr1');  // begin the instruction sequence
-  };
-
-  // ───────────────
-  // 1) Main state‑machine + countdown
-  // ───────────────
+  // ─── 1) Main state‑machine & countdown ───
   useEffect(() => {
     let timerId;
 
@@ -90,28 +82,26 @@ export default function Part3Discussion() {
     return () => clearTimeout(timerId);
   }, [phase, seconds, navigate]);
 
-  // ───────────────
-  // 2) Cleanup on unmount
-  // ───────────────
+  // ─── 2) Cleanup on unmount ───
   useEffect(() => {
-    return () => {
-      stopAllAudio();
-    };
+    return () => stopAllAudio();
   }, []);
 
-  // ───────────────
-  // 3) Locked UI
-  // ───────────────
+  // ─── 3) Locked UI ───
   if (phase === 'locked') {
     return (
       <div style={{ textAlign: 'center', margin: '4rem 1rem' }}>
         <h2>Part Three</h2>
+        <p>
+          You will have one minute to prepare, then 1½ minutes to speak,
+          then a 45‑second follow‑up.
+        </p>
         <button
           className="btn btn-primary"
           style={{ marginTop: '2rem' }}
           onClick={() => {
-            resumeAudio();    // unlock Web Audio
-            setPhase('instr1'); // start the part 3 sequence
+            resumeAudio();       // unlock Web Audio
+            setPhase('instr1');  // start the sequence
           }}
         >
           Begin Part 3
