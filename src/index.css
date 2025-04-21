@@ -1,0 +1,160 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+/* wrap instructions (or images) in a light panel */
+.panel {
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #fff;
+}
+
+/* container for two‑column layout */
+.two-column {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* right‑hand sidebar for timer / recorder */
+.sidebar {
+  width: 200px;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #fafafa;
+}
+
+/* pulsing red dot for “live recording” */
+.recording-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: red;
+  animation: pulse 1s infinite;
+}
+
+/* keyframes for the pulsing effect */
+@keyframes pulse {
+  0%   { transform: scale(1);    opacity: 1; }
+  50%  { transform: scale(1.4);  opacity: 0.6; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+/* Base button reset + shared styles */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.3s ease;
+}
+
+/* Primary action (Finish Recording) */
+.btn-primary {
+  background: linear-gradient(135deg, #32CD32, #228B22);
+  color: white;
+}
+.btn-primary:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* Secondary action (Skip / navigation) */
+.btn-secondary {
+  background: linear-gradient(135deg, #339AF0, #1C7ED6);
+  color: white;
+}
+.btn-secondary:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* Tertiary action (e.g. Cancel / less-emphatic) */
+.btn-tertiary {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: black;
+}
+.btn-tertiary:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+.btn-tertiary:active {
+  transform: translateY(1px);
+}
+/* ──────── WRAPPER ──────── */
+.app-container {
+  /* always center the content & give a little breathing room */
+  margin: 0 auto;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* on mid‑sized screens and up, constrain to a comfortable max */
+@media (min-width: 600px) {
+  .app-container {
+    max-width: 1200px;   /* bump this up from 800px to something more generous */
+    padding: 0;          /* remove side padding once we’re wide enough */
+  }
+}
+
+/* on very large screens you could even go wider */
+@media (min-width: 1400px) {
+  .app-container {
+    max-width: 1400px;
+  }
+}
+
+/* ──────── PANELS ──────── */
+/* below tablet, stack the panels */
+@media (max-width: 768px) {
+  .two-column {
+    flex-direction: column;
+  }
+  .panel,
+  .sidebar {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+}
+
+/* part 1 images full‑width on phones */
+@media (max-width: 500px) {
+  .part1-images {
+    flex-direction: column;
+  }
+  .part1-images img {
+    width: 100% !important;
+    height: auto;
+  }
+}
+
+/* tiny screens: shrink the font a bit */
+@media (max-width: 400px) {
+  body, .panel, .sidebar {
+    font-size: 0.9rem;
+  }
+}
+
+
