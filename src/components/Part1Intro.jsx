@@ -1,7 +1,7 @@
 // src/components/Part1Intro.jsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { resumeAudio, playAudio } from '../utils/audioWeb'; 
+import { playAudio } from '../utils/audioWeb';
 import { generalPart1 } from '../data/prompts';
 
 export default function Part1Intro() {

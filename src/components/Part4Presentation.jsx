@@ -11,7 +11,6 @@ export default function Part4Presentation() {
   const navigate        = useNavigate();
   const { addRecording } = useRecordings();
   const { image, instructionText, questions } = generalPart4;
-  const total = questions.length;
 
   // phases: locked → intro → prep → speak → done
   const [phase, setPhase]   = useState('locked');
