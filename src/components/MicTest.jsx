@@ -1,8 +1,10 @@
 // src/components/MicTest.jsx
 import React, { useState, useRef } from 'react';
-import Recorder from './Recorder';
+import { useNavigate }            from 'react-router-dom';
+import Recorder                   from './Recorder';
 
 export default function MicTest() {
+  const navigate = useNavigate();
   const [testing, setTesting] = useState(false);
   const [blobUrl, setBlobUrl] = useState(null);
   const timeoutRef = useRef(null);
@@ -10,17 +12,15 @@ export default function MicTest() {
   const startTest = () => {
     setBlobUrl(null);
     setTesting(true);
-
-    // stop after 3 seconds
     timeoutRef.current = setTimeout(() => {
       setTesting(false);
     }, 3000);
   };
 
   const handleComplete = blob => {
-    // give the user something to play back
-    setBlobUrl(URL.createObjectURL(blob));
     clearTimeout(timeoutRef.current);
+    setTesting(false);
+    setBlobUrl(URL.createObjectURL(blob));
   };
 
   return (
@@ -40,12 +40,21 @@ export default function MicTest() {
         onRecordingComplete={handleComplete}
       />
 
-      {/* Playback */}
+      {/* Playback + Continue */}
       {blobUrl && (
-        <div style={{ marginTop: '1rem' }}>
-          <p>Here’s your test clip—does it sound right?</p>
-          <audio src={blobUrl} controls />
-        </div>
+        <>
+          <div style={{ marginTop: '1rem' }}>
+            <p>Here’s your test clip—does it sound right?</p>
+            <audio src={blobUrl} controls />
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: '1rem' }}
+            onClick={() => navigate('/speaking/part1-intro')}
+          >
+            Continue to Part 1
+          </button>
+        </>
       )}
     </div>
   );

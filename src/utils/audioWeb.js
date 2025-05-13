@@ -1,55 +1,58 @@
 // src/utils/audioWeb.js
-// — a tiny “manager” for loading & playing short clips via Web Audio —
+// — a tiny “manager” for loading & playing short clips via Web Audio —
 
 // 1) Create the AudioContext and storage for buffers & sources
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
-const buffers  = {};
-const sources = [];  // ← we’ll push every live source node here
+const buffers = {};
+const sources = [];
 
 /** Decode & store under `name` */
 export async function loadAudio(name, url) {
-  const res         = await fetch(url);
+  const res = await fetch(url);
   const arrayBuffer = await res.arrayBuffer();
-  buffers[name]     = await audioCtx.decodeAudioData(arrayBuffer);
+  buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-/** In user‑gesture: unlock the AudioContext */
+/** In user-gesture: unlock the AudioContext */
 export function resumeAudio() {
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 }
 
-/** Play a named buffer, then onEnded; track that source so we can stop it */
-export function playAudio(name, onEnded = () => {}) {
+/**
+ * Play a named buffer and return a Promise that resolves when playback ends.
+ * This lets you chain playAudio('foo').then(() => ...)
+ */
+export function playAudio(name) {
   const buffer = buffers[name];
   if (!buffer) {
     console.warn(`AudioWeb: buffer "${name}" not loaded`);
-    onEnded();
-    return;
+    return Promise.resolve();
   }
-  const src = audioCtx.createBufferSource();
-  src.buffer = buffer;
-  src.connect(audioCtx.destination);
 
-  // when this source node finishes, remove it from our list and fire callback
-  src.onended = () => {
-    const idx = sources.indexOf(src);
-    if (idx > -1) sources.splice(idx, 1);
-    onEnded();
-  };
+  return new Promise((resolve) => {
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(audioCtx.destination);
 
-  sources.push(src);
-  src.start(0);
+    // When playback ends, remove from sources and resolve
+    src.onended = () => {
+      const idx = sources.indexOf(src);
+      if (idx > -1) sources.splice(idx, 1);
+      resolve();
+    };
+
+    sources.push(src);
+    src.start(0);
+  });
 }
 
 /** Stop & remove all currently playing sources */
 export function stopAllAudio() {
-  // stop() is safe to call even if already ended
   sources.forEach(src => {
-    try { src.stop(); }
-    catch (_) {}
+    try { src.stop(); } catch (_) {}
   });
   sources.length = 0;
 }

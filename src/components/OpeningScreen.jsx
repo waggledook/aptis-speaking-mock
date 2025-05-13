@@ -6,8 +6,8 @@ export default function OpeningScreen() {
   const navigate = useNavigate();
   return (
     <div style={{ textAlign: 'center', marginTop: '4rem' }}>
-      <h1>Aptis Advanced Practice Test</h1>
-      <p>Speaking • 3 questions</p>
+      <h1>Aptis General Practice Test</h1>
+      <p>Speaking • 4 questions</p>
 
       {/* START BUTTON */}
       <button

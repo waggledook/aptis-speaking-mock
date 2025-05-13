@@ -1,36 +1,46 @@
 // src/components/Part1Question.jsx
-import React, { useState, useEffect }  from 'react';
-import { useNavigate }                from 'react-router-dom';
-import Timer                          from './Timer';
-import Recorder                       from './Recorder';
-import prompts                        from '../data/prompts';
-import { useRecordings }              from '../RecordingContext';
-import { playAudio }                  from '../utils/audioWeb';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useMatch } from 'react-router-dom';
+import Timer from './Timer';
+import Recorder from './Recorder';
+import { useRecordings } from '../RecordingContext';
+import { playAudio } from '../utils/audioWeb';
+import { generalPart1, generalPart3 } from '../data/prompts';
 
 export default function Part1Question() {
   const navigate = useNavigate();
   const { addRecording } = useRecordings();
-  const { images, questions } = prompts.part1;
+  const { qIndex: qIndexParam } = useParams();
+
+  // Determine if this is General Part 1 or Part 3
+  const isPart1 = Boolean(useMatch('/speaking/part1/:qIndex'));
+  const data = isPart1 ? generalPart1 : generalPart3;
+  const { questions, images = [] } = data;
+
   const total = questions.length;
+  const index = Number(qIndexParam);
 
-  // State
-  const [qIndex, setQIndex]   = useState(0);           // 0‑based
-  const [phase, setPhase]     = useState('waiting');   // waiting → recording → done
-  const [seconds, setSeconds] = useState(45);
+  // Set initial timer: 30s for Part 1, 45s for Part 3
+  const defaultSeconds = isPart1 ? 30 : 45;
+  const [phase, setPhase] = useState('waiting');
+  const [seconds, setSeconds] = useState(defaultSeconds);
 
-  // 2) Kick off each question: play prompt → beep → start recording
+  // Play the prompt audio, then beep, then start recording
   useEffect(() => {
     if (phase !== 'waiting') return;
-    const timer = setTimeout(() => {
-      const key = `p1_q${qIndex+1}`;
-      playAudio(key, () => {
-        playAudio('beep', () => setPhase('recording'));
-      });
+    const timeout = setTimeout(() => {
+      // choose p1_q for Part 1, p3_q for Part 3
+      const key = isPart1
+      ? `p1_q${index + 1}`
+      : `p3_q${index + 1}`;
+      playAudio(key)
+        .then(() => playAudio('beep'))
+        .then(() => setPhase('recording'));
     }, 500);
-    return () => clearTimeout(timer);
-  }, [qIndex, phase]);
+    return () => clearTimeout(timeout);
+  }, [index, phase, isPart1]);
 
-  // 3) Countdown during recording
+  // Countdown when recording
   useEffect(() => {
     if (phase !== 'recording') return;
     if (seconds <= 0) {
@@ -41,35 +51,42 @@ export default function Part1Question() {
     return () => clearTimeout(id);
   }, [phase, seconds]);
 
-  // 4) Advance to next question or Part 2 once recording done
+  // Advance after each question or move to next part
   useEffect(() => {
     if (phase !== 'done') return;
-    const timer = setTimeout(() => {
-      if (qIndex + 1 < total) {
-        setQIndex(i => i + 1);
+    const timeout = setTimeout(() => {
+      if (index + 1 < total) {
+        const nextRoute = isPart1
+          ? `/speaking/part1/${index + 1}`
+          : `/speaking/part3/${index + 1}`;
         setPhase('waiting');
-        setSeconds(45);
+        setSeconds(defaultSeconds);
+        navigate(nextRoute);
       } else {
-        navigate('/speaking/part2');
+        navigate(isPart1 ? '/speaking/part2' : '/speaking/part4');
       }
     }, 500);
-    return () => clearTimeout(timer);
-  }, [phase, qIndex, total, navigate]);
+    return () => clearTimeout(timeout);
+  }, [phase, index, total, navigate, isPart1, defaultSeconds]);
 
   return (
     <div style={{ padding: '2rem' }}>
       <div className="two-column">
-        {/* Left panel */}
         <div className="panel" style={{ flex: 1 }}>
-          <h3>Part 1 – Question {qIndex+1} of {total}</h3>
-          <div className="part1-images" style={{ display: 'flex', gap: '1rem' }}>
-            <img src={images[0]} alt="" style={{ width: '45%' }} />
-            <img src={images[1]} alt="" style={{ width: '45%' }} />
-          </div>
-          <p style={{ marginTop: '1rem' }}>{questions[qIndex]}</p>
+          <h3>
+            Speaking
+            <br />
+            Part {isPart1 ? 1 : 3} – Question {index + 1} of {total}
+          </h3>
+          {images.length === 2 && (
+            <div className="part1-images" style={{ display: 'flex', gap: '1rem' }}>
+              <img src={images[0]} alt="" style={{ width: '45%' }} />
+              <img src={images[1]} alt="" style={{ width: '45%' }} />
+            </div>
+          )}
+          <p style={{ marginTop: '1rem' }}>{questions[index]}</p>
         </div>
 
-        {/* Right sidebar */}
         <div className="sidebar">
           {phase === 'recording' && (
             <>
@@ -77,7 +94,7 @@ export default function Part1Question() {
                 <span className="recording-dot" /> Recording…
               </div>
               <Timer duration={seconds} onExpire={() => setSeconds(0)} />
-              {seconds <= 35 && (
+              {seconds <= defaultSeconds - 5 && (
                 <button
                   className="btn btn-primary"
                   style={{ marginTop: '1rem' }}
@@ -89,24 +106,22 @@ export default function Part1Question() {
             </>
           )}
 
-          {/* Invisible recorder */}
           <Recorder
             recording={phase === 'recording'}
             onRecordingComplete={blob => {
-              addRecording(blob, `Part1_Q${qIndex+1}`);
+              addRecording(blob, `Part${isPart1 ? '1' : '3'}_Q${index + 1}`);
             }}
           />
 
-          {/* Skip button (just navigates) */}
           {phase !== 'done' && (
             <div style={{ marginTop: '2rem', fontSize: '0.9rem' }}>
-              <p>Don’t want to practise Part 1?</p>
+              <p>Don’t want to practise Part {isPart1 ? '1' : '3'}?</p>
               <button
                 className="btn btn-secondary"
                 style={{ marginTop: '1rem', fontSize: '0.9rem' }}
-                onClick={() => navigate('/speaking/part2')}
+                onClick={() => navigate(isPart1 ? '/speaking/part2' : '/speaking/part4')}
               >
-                Skip to Part 2
+                Skip to Part {isPart1 ? '2' : '4'}
               </button>
             </div>
           )}
@@ -115,3 +130,4 @@ export default function Part1Question() {
     </div>
   );
 }
+
